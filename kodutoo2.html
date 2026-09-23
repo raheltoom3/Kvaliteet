@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Kohvi hinna arvutamine</title>
+    <script>
+      function arvutus() {
+        vastus.innerText = "Sinu kohv maksab " +
+          (kogus.valueAsNumber * hind.valueAsNumber / 100).toFixed(2) +
+          " eurot";
+      }
+    </script>
+  </head>
+  <body>
+    Kui palju gramme kohvi kasutad? <br />
+    <input type="number" id="kogus" placeholder="Grammid" />
+
+    <br /><br />
+
+    Kui palju maksab 100 g kohvi? <br />
+    <input type="number" id="hind" placeholder="Hind eurodes" />
+
+    <br /><br />
+
+    <input type="button" value="Arvuta" onclick="arvutus()" />
+
+    <p id="vastus">Vastuse koht</p>
+
+    <img src="https://autods-scraper-images.s3-us-west-2.amazonaws.com/8ac541947f7c0239db7a83840051e42c.png" />
+  </body>
+</html>
