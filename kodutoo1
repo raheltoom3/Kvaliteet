@@ -1,1 +1,33 @@
-<!DOCTYPE>
+<!doctype html>
+<html>
+  <head>
+    <title>Tallinn Coffee Festival 2026</title>
+	<style>
+		td {
+			padding: 5px;
+		}
+	</style>
+  </head>
+  <body style="background-color: lightbrown">
+    <h1  style="background-color: brown">Save The Date!</h1>
+    <div>
+      Ära maga maha. <span style="font-weight: bold">Kohvifestival</span> tuleb taas.
+    </div>
+    <h1>Koolitundide teemad</h1>
+     <table style="border-color: black; border-width: 2px;border-style:solid;">
+		  <tr>
+			  <td>kuupäev</td>
+			  <td>teema</td>
+		  </tr>
+		  <tr>
+			  <td>2. september</td>
+			  <td>pilt</td>
+		  </tr>
+		  <tr>
+			  <td>9. september</td>
+			  <td>video</td>
+		  </tr>
+	  </table>
+	  <a href="https://www.chess.com">Male</a>
+  </body>
+</html>
