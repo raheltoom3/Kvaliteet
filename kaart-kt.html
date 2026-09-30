@@ -9,12 +9,10 @@
       padding: 0;
       margin: 0;
     }
-
     html, body {
       height: 100%;
       width: 100%;
     }
-
     #kaardikiht {
       width: 100%;
       height: 100%;
@@ -32,13 +30,9 @@
           attribution: '&copy; OpenStreetMap contributors'
         }
       ).addTo(kaart);
-
-      // Google Sheetsist andmete võtmine
       fetch("https://script.google.com/macros/s/AKfycbztkJVFBjmf-Ca2LLADl8sphLilyWNr2OTqzsd7ph3VH5p5k4e4NUsa85YXdQPZOHR_/exec")
         .then(response => response.json())
         .then(andmed => {
-
-          // Esimene rida on tabeli pealkirjad
           andmed.slice(1).forEach(rida => {
 
             let nimi = rida[0];
@@ -52,15 +46,11 @@
                 "<b>" + nimi + "</b><br>" + info
               );
           });
-
         });
     }
   </script>
 </head>
-
 <body onload="algus()">
-
   <div id="kaardikiht"></div>
-
 </body>
 </html>
