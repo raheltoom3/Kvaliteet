@@ -27,7 +27,8 @@
 		 setContent("Vajutasid "+e.latlng.toString()).openOn(kaart);
 	     let lisand="laiuskraad="+e.latlng.lat+"&pikkuskraad="+e.latlng.lng+"&tyyp="+tyybivalik.value+"&kommentaar="+encodeURI(kast1.value);
 	     console.log(lisand);
-	     fetch("https://script.google.com/macros/s/AKfycbzPqwiq9TUTmkAmj37RtNGT3XffIxCRKtdUU8s51FyG7MTTuIgrqdOpeY2UZnvLOBQ/exec?laiuskraad=58.5&pikkuskraad=22.1%tyyp=katlamaja&kommentaar=punane
+	     fetch("https://script.google.com/macros/s/AKfycbzPqwiq9TUTmkAmj37RtNGT3XffIxCRKtdUU8s51FyG7MTTuIgrqdOpeY2UZnvLOBQ/exec?"+lisand)
+	   //https://script.google.com/macros/s/AKfycbyxanIant5rJ88p462pK3RzAG6Wn56l8gQBz4LY5A4yJl80SBnMv15adGPD-2Pq4mjH/exec?laiuskraad=58.5&pikkuskraad=22.1&tyyp=katlamaja&kommentaar=punane
    }
 
   </script>
@@ -43,4 +44,4 @@
   </div>
   <div id="kaardikiht"></div>
  </body>
-</html>dikiht"></div>
+</html>
