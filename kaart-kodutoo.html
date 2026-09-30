@@ -7,25 +7,43 @@
  <style>
    body {padding: 0; margin: 0; }
    html, body { height: 100%; width: 100%;}
-   #kaardikiht {float:bottom; width:100%; height:100%;}
+   #kaardikiht {float: bottom; width:100%; height:100%;}
  </style>
  <script>
    var kaart;
    function algus(){
-    kaart = L.map('kaardikiht').setView([59.439, 24.773], 13);
+      kaart = L.map('kaardikiht').setView([20, 0], 2);
       new L.TileLayer(
-  'https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA', {
-	  attribution: "Map: <a  href='http://www.maaamet.ee/'>Maa-amet</a>",
-	  tms: true,
-    }).addTo(kaart);
-    L.marker([59.441116, 24.73549]).addTo(kaart).bindPopup("Minu kodupood");
-    L.circle([59.437202, 24.721173], {radius: 1000, color: "pink"}).addTo(kaart).bindPopup("Minu kodu");    
-    L.circle([59.438328, 24.7284], {radius: 1000, color: "yellow"}).addTo(kaart).bindPopup("Minu töökoht");   
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }
+      ).addTo(kaart);
+      L.marker([58.5953, 25.0136])
+      .addTo(kaart)
+      .bindPopup("Eesti, Tuglase kodumaa");
+
+      L.marker([59.9343, 30.3351])
+      .addTo(kaart)
+      .bindPopup("Peterburi – Tuglasega seotud linn");
+
+      L.marker([60.1699, 24.9384])
+     .addTo(kaart)
+     .bindPopup("Soome – oluline pagulusaastate paik");
+
+     L.marker([48.8566, 2.3522])
+     .addTo(kaart)
+     .bindPopup("Pariis – Tuglas veetis siin mitu talve");
+
+     L.marker([41.9028, 12.4964])
+     .addTo(kaart)
+     .bindPopup("Itaalia – Tuglas reisis Itaalias, sh Roomas");
+
    }
 
-  </script>
- </head>  
+ </script>
+ </head>
+
  <body onload="algus()">
-  <div id="kaardikiht"></div>
+   <div id="kaardikiht"></div>
  </body>
 </html>
