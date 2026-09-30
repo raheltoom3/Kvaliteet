@@ -4,7 +4,7 @@
  <title>Kaart</title>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js"></script>
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" />
-<style>
+ <style>
    body {padding: 0; margin: 0; }
    html, body { height: 100%; width: 100%;}
    #kaardikiht {float:bottom; width:100%; height:100%;}
@@ -26,7 +26,7 @@
 	     hypik.setLatLng(e.latlng).
 		 setContent("Vajutasid "+e.latlng.toString()).openOn(kaart);
 	     let lisand="laiuskraad="+e.latlng.lat+"&pikkuskraad="+e.latlng.lng;
-	     fetch("https://script.google.com/macros/s/AKfycbytuxw3oa7ICOiZQZJTFg59H6g_6QmgBJfDkf0ljKcRSvGzZsy_cpdvSik6Rh94TMb8Kw/exec?"+lisand)
+	     fetch("https://script.google.com/macros/s/AKfycbyYip_j29foiR75foc02vGlWqYl0ZjwWb-jxz5CNI-ch7X6nsYNh4aS04xOK6EWJ4WGVA/exec?"+lisand)
    }
 
   </script>
