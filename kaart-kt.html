@@ -21,9 +21,7 @@
   <script>
     var kaart;
     function algus() {
-      // Maailmakaart
       kaart = L.map('kaardikiht').setView([30, 10], 3);
-      // OpenStreetMap
       new L.TileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
