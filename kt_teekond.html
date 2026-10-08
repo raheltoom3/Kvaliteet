@@ -1,63 +1,324 @@
 <!DOCTYPE html>
 <html>
- <head>
- <title>Kaart</title>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js"></script>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" />
- <style>
-   body {padding: 0; margin: 0; }
-   html, body { height: 100%; width: 100%;}
-   #kaardikiht {float:bottom; width:100%; height:100%;}
- </style>
- <script>
-   let kaart;
-   let hypik;
-   let marker1, marker2;
-   let grupp;
-   function algus(){
-    kaart = L.map('kaardikiht').setView([59.439, 24.773], 12);
-      new L.TileLayer(  'https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA', {
-	  attribution: "Map: <a  href='http://www.maaamet.ee/'>Maa-amet</a>",
-	  tms: true,
-    }).addTo(kaart);
-    marker1=L.marker([59.439, 24.773], {draggable: true});
-    marker2=L.marker([59.439, 24.773], {draggable: true});
-	grupp=L.layerGroup();
-	grupp.addTo(kaart);
-    marker1.addTo(kaart);
-    marker2.addTo(kaart);
-    marker1.on("dragend", liikumine);
-    marker2.on("dragend", liikumine);
-   	hypik=L.popup(); 
-	kaart.on("click", vajutus);
-   }
-   function liikumine(){
-	   selgitus.innerText=Math.round(marker1.getLatLng().distanceTo(marker2.getLatLng()))/1000+" km";
-	   grupp.clearLayers();
-     let koht1=marker1.getLatLng();
-     let koht2=marker2.getLatLng();
-	   L.polyline([koht1, koht2]).addTo(grupp);
-     let aadress="https://router.project-osrm.org/route/v1/driving/"+koht1.lng+","+
-               koht1.lat+";"+koht2.lng+","+koht2.lat+"?overview=full&geometries=geojson"
-     console.log(aadress);
-     fetch(aadress).then(d => d.json()).then(kuvaTee)
-   }
-	function kuvaTee(andmed){
-		tee=andmed.routes[0];
-		console.log(tee["duration"], tee["distance"]);
-		console.log(tee["geometry"]);
-		L.geoJSON(tee.geometry).addTo(grupp);
-//    https://router.project-osrm.org/route/v1/driving/24.55307,59.428316;24.987373,59.457465?overview=full&geometries=geojson
-	}
-   function vajutus(e){
-	     hypik.setLatLng(e.latlng).
-		 setContent("Vajutasid "+e.latlng.toString()).openOn(kaart);
-   }
+<head>
+
+  <title>Kaart</title>
+
+  <!-- Leaflet -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" />
+
+  <style>
+
+    body {
+      padding: 0;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    #kaardikiht {
+      width: 100%;
+      height: 70%;
+    }
+
+    #selgitus {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #tulemused {
+      padding: 10px;
+      height: 25%;
+      overflow-y: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #eee;
+    }
+
+  </style>
+
+  <script>
+
+    let kaart;
+    let grupp;
+
+    // Siia salvestame Google Sheetsi kohad
+    let tabeliKohad = [];
+
+    // Kasutaja valitud marker
+    let kasutajaMarker;
+
+
+    function algus() {
+
+      // Loome kaardi
+      kaart = L.map('kaardikiht').setView([59.439, 24.773], 7);
+
+
+      // Maa-ameti kaart
+      new L.TileLayer(
+        'https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA',
+        {
+          attribution: "Map: <a href='http://www.maaamet.ee/'>Maa-amet</a>",
+          tms: true
+        }
+      ).addTo(kaart);
+
+
+      // Kiht tabeli markerite jaoks
+      grupp = L.layerGroup();
+      grupp.addTo(kaart);
+
+
+      // Kui kasutaja klikib kaardil
+      kaart.on("click", valiAsukoht);
+
+
+      // Loeme Google Sheetsist andmed
+      fetch(
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxFzOwqljwhsUqxgOhESofN3IMTcWDL4tcmjuTkCXTgGQxMMC8OT7RImFSx39QkArC3fDIzXNYaAVV/pub?output=csv"
+      )
+      .then(vastus => vastus.text())
+      .then(loeCSV)
+      .catch(viga => {
+        console.log("Google Sheetsi lugemisel tekkis viga:", viga);
+        document.getElementById("selgitus").innerText =
+          "Google Sheetsist andmete laadimine ebaõnnestus.";
+      });
+
+    }
+
+
+    // Google Sheetsi CSV lugemine
+    function loeCSV(csv) {
+
+      let read = csv.trim().split("\n");
+
+      // Esimene rida on veerupealkirjad
+      let pealkirjad = read[0].split(",");
+
+      console.log("Veerud:", pealkirjad);
+
+
+      // Loeme kõik read alates teisest reast
+      for (let i = 1; i < read.length; i++) {
+
+        let rida = read[i].split(",");
+
+        // A = ajatempel
+        // B = kohanimi
+        // C = pikkuskraad
+        // D = laiuskraad
+
+        if (rida.length < 4) {
+          continue;
+        }
+
+
+        let nimi = rida[1];
+
+        let lng = parseFloat(rida[2]);
+
+        let lat = parseFloat(rida[3]);
+
+
+        // Kontrollime, kas koordinaadid on olemas
+        if (!isNaN(lat) && !isNaN(lng)) {
+
+          let koht = {
+            nimi: nimi,
+            lat: lat,
+            lng: lng
+          };
+
+          // Lisame koha nimekirja
+          tabeliKohad.push(koht);
+
+
+          // Loome kaardile markeri
+          let marker = L.marker([lat, lng]);
+
+
+          // Markeri hüpikaken
+          marker.bindPopup(
+            "<b>" + nimi + "</b><br>" +
+            "Pikkuskraad: " + lng + "<br>" +
+            "Laiuskraad: " + lat
+          );
+
+
+          // Lisame markeri kaardile
+          marker.addTo(grupp);
+
+        }
+
+      }
+
+
+      console.log("Tabelist leitud kohad:", tabeliKohad);
+
+
+      // Kui kohti leiti, zoomime kaardi nende järgi
+      if (tabeliKohad.length > 0) {
+
+        let piirid = L.latLngBounds(
+          tabeliKohad.map(koht => [koht.lat, koht.lng])
+        );
+
+        kaart.fitBounds(piirid);
+
+      }
+
+    }
+
+
+    // Kasutaja klikib kaardile
+    function valiAsukoht(e) {
+
+      let koht = e.latlng;
+
+
+      // Kui kasutaja marker on juba olemas,
+      // liigutame selle uude kohta
+      if (kasutajaMarker) {
+
+        kasutajaMarker.setLatLng(koht);
+
+      }
+
+      // Kui markerit veel pole, loome selle
+      else {
+
+        kasutajaMarker = L.marker(koht, {
+          draggable: true
+        });
+
+        kasutajaMarker.bindPopup(
+          "<b>Sinu valitud asukoht</b>"
+        );
+
+        kasutajaMarker.addTo(kaart);
+
+
+        // Kui kasutaja markerit lohistab
+        kasutajaMarker.on("dragend", arvutaKaugused);
+
+      }
+
+
+      // Arvutame kaugused
+      arvutaKaugused();
+
+    }
+
+
+    // Arvutame kauguse kõikide tabeli kohtadeni
+    function arvutaKaugused() {
+
+      if (!kasutajaMarker) {
+        return;
+      }
+
+
+      let kasutajaKoht = kasutajaMarker.getLatLng();
+
+
+      // Tekst kaardi kohal
+      document.getElementById("selgitus").innerText =
+        "Valitud asukoht: " +
+        kasutajaKoht.lat.toFixed(5) +
+        ", " +
+        kasutajaKoht.lng.toFixed(5);
+
+
+      // Tühjendame vana tabeli
+      let tulemused = document.getElementById("tulemused");
+
+      tulemused.innerHTML = "";
+
+
+      // Loome uue tabeli
+      let tabel = document.createElement("table");
+
+
+      // Tabeli päis
+      tabel.innerHTML =
+        "<tr>" +
+        "<th>Koht</th>" +
+        "<th>Kaugus</th>" +
+        "</tr>";
+
+
+      // Arvutame kauguse iga koha juurde
+      for (let koht of tabeliKohad) {
+
+        let tabeliKoht = L.latLng(
+          koht.lat,
+          koht.lng
+        );
+
+
+        // Kaugus meetrites
+        let kaugus = kasutajaKoht.distanceTo(tabeliKoht);
+
+
+        // Muudame kilomeetriteks
+        let kaugusKm = kaugus / 1000;
+
+
+        // Loome tabelirea
+        let rida = document.createElement("tr");
+
+
+        rida.innerHTML =
+          "<td>" + koht.nimi + "</td>" +
+          "<td>" + kaugusKm.toFixed(2) + " km</td>";
+
+
+        tabel.appendChild(rida);
+
+      }
+
+
+      tulemused.appendChild(tabel);
+
+    }
 
   </script>
- </head>  
- <body onload="algus()">
-  <div id="selgitus">selgituse koht</div>
+
+</head>
+
+
+<body onload="algus()">
+
+  <div id="selgitus">
+    Laadin Google Sheetsist kohti...
+  </div>
+
+
   <div id="kaardikiht"></div>
- </body>
+
+
+  <div id="tulemused">
+  </div>
+
+</body>
+
 </html>
