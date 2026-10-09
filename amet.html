@@ -1,0 +1,64 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Ametite valik</title>
+
+    <script>
+      function kysi() {
+        let lause = `
+          SELECT DISTINCT ?amet ?ametLabel
+          WHERE {
+            ?item wdt:P106 ?amet.
+
+            SERVICE wikibase:label {
+              bd:serviceParam wikibase:language "et,en".
+            }
+          }
+          ORDER BY ?ametLabel
+          LIMIT 100
+        `;
+
+        let aadress =
+          "https://query.wikidata.org/sparql?format=json&query="
+          + encodeURIComponent(lause);
+
+        fetch(aadress)
+          .then(d => d.json())
+          .then(kuva)
+          .catch(viga => {
+            console.log(viga);
+            vastus.innerHTML = "<li>Andmete laadimine ebaõnnestus.</li>";
+          });
+      }
+
+      function kuva(d) {
+        vastus.innerHTML = "";
+
+        for (let rida of d.results.bindings) {
+          let valik = document.createElement("option");
+
+          valik.value = rida.amet.value;
+          valik.textContent = rida.ametLabel.value;
+
+          vastus.appendChild(valik);
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <label for="vastus">Vali amet:</label>
+
+    <select id="vastus">
+      <option>Laadin ameteid...</option>
+    </select>
+
+    <input type="button" value="Otsi ameteid" onclick="kysi()">
+
+    <script>
+      kysi();
+    </script>
+  </body>
+</html>
