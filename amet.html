@@ -1,64 +1,47 @@
-
 <!doctype html>
 <html>
   <head>
-    <meta charset="UTF-8">
-    <title>Ametite valik</title>
-
-    <script>
-      function kysi() {
-        let lause = `
-          SELECT DISTINCT ?amet ?ametLabel
-          WHERE {
-            ?item wdt:P106 ?amet.
-
-            SERVICE wikibase:label {
-              bd:serviceParam wikibase:language "et,en".
-            }
-          }
-          ORDER BY ?ametLabel
-          LIMIT 100
-        `;
-
-        let aadress =
-          "https://query.wikidata.org/sparql?format=json&query="
-          + encodeURIComponent(lause);
-
-        fetch(aadress)
-          .then(d => d.json())
-          .then(kuva)
-          .catch(viga => {
-            console.log(viga);
-            vastus.innerHTML = "<li>Andmete laadimine ebaõnnestus.</li>";
-          });
-      }
-
-      function kuva(d) {
-        vastus.innerHTML = "";
-
-        for (let rida of d.results.bindings) {
-          let valik = document.createElement("option");
-
-          valik.value = rida.amet.value;
-          valik.textContent = rida.ametLabel.value;
-
-          vastus.appendChild(valik);
+     <script>
+        function kysi(){ 
+           let lause=`
+             SELECT ?item ?itemLabel
+              WHERE
+              {
+                ?item wdt:P27 wd:${riik.value}. 
+                ?item wdt:P106 wd:Q177220.
+              
+                SERVICE wikibase:label {
+                  bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en".
+                } 
+              }
+              LIMIT 10
+           `;
+           let aadress="https://query.wikidata.org/sparql?format=json&query="+encodeURI(lause);      
+           fetch(aadress).then(d => d.json()).then(kuva);
         }
-      }
-    </script>
+
+
+       
+        function kuva(d){
+           console.log(d);
+           vastus.innerHTML="";
+           for(let rida of d["results"]["bindings"]){
+              console.log(rida["itemLabel"]["value"]);
+              let lause=document.createElement("li");
+              lause.textContent=rida["itemLabel"]["value"];
+              vastus.appendChild(lause);
+           }
+        }
+     </script>
   </head>
-
   <body>
-    <label for="vastus">Vali amet:</label>
-
-    <select id="vastus">
-      <option>Laadin ameteid...</option>
-    </select>
-
-    <input type="button" value="Otsi ameteid" onclick="kysi()">
-
-    <script>
-      kysi();
-    </script>
+     <select id="riik" onchange="kysi()">
+        <option value="Q33">Soome</option>
+        <option value="Q191">Eesti</option>
+        <option value="Q34">Rootsi</option>
+     </select>
+     <input type="button" value="otsi" onclick="kysi()" />
+ 
+     <ul id="vastus"></ul>
   </body>
 </html>
