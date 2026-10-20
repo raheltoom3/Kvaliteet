@@ -1,0 +1,233 @@
+
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maletajad Wikidatas</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 850px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+
+    select, button {
+      padding: 8px;
+      margin: 5px 5px 10px 0;
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    a {
+      color: #2459a9;
+    }
+  </style>
+
+  <script>
+    async function kysi() {
+      const riik = document.getElementById("riik").value;
+      const paring = document.getElementById("paring").value;
+      const vastus = document.getElementById("vastus");
+
+      let lause;
+
+      // Päring 1: valitud riigi maletajad ja nende tiitlid
+      if (paring === "maletajad") {
+        lause = `
+          SELECT DISTINCT ?isik ?isikLabel ?tiitelLabel WHERE {
+            ?isik wdt:P106 wd:Q10873124;
+                  wdt:P27 wd:${riik}.
+
+            OPTIONAL {
+              ?isik wdt:P2962 ?tiitel.
+            }
+
+            SERVICE wikibase:label {
+              bd:serviceParam wikibase:language "et,en".
+            }
+          }
+          ORDER BY ?isikLabel
+          LIMIT 50
+        `;
+      }
+
+      // Päring 2: valitud riigi suurmeistrid
+      else {
+        lause = `
+          SELECT DISTINCT ?isik ?isikLabel WHERE {
+            ?isik wdt:P106 wd:Q10873124;
+                  wdt:P27 wd:${riik};
+                  wdt:P2962 wd:Q105269.
+
+            SERVICE wikibase:label {
+              bd:serviceParam wikibase:language "et,en".
+            }
+          }
+          ORDER BY ?isikLabel
+          LIMIT 50
+        `;
+      }
+
+      const aadress =
+        "https://query.wikidata.org/sparql?format=json&query="
+        + encodeURIComponent(lause);
+
+      vastus.textContent = "Laadin Wikidata tulemusi...";
+
+      try {
+        const vastusServerist = await fetch(aadress);
+
+        if (!vastusServerist.ok) {
+          throw new Error("Wikidata päring ebaõnnestus.");
+        }
+
+        const andmed = await vastusServerist.json();
+        kuva(andmed, paring);
+
+      } catch (viga) {
+        vastus.textContent =
+          "Andmete laadimine ebaõnnestus. Proovi mõne aja pärast uuesti.";
+        console.error(viga);
+      }
+    }
+
+    function kuva(andmed, paring) {
+      const vastus = document.getElementById("vastus");
+      vastus.replaceChildren();
+
+      const tulemused = andmed.results.bindings;
+
+      const kokkuvote = document.createElement("p");
+
+      if (tulemused.length === 0) {
+        kokkuvote.textContent =
+          "Tulemusi ei leitud. See võib tähendada, et Wikidatas pole piisavalt andmeid.";
+        vastus.appendChild(kokkuvote);
+        return;
+      }
+
+      kokkuvote.textContent =
+        "Leiti " + tulemused.length +
+        " tulemust (kuvatakse kuni 50 kirjet).";
+
+      vastus.appendChild(kokkuvote);
+
+      const tabel = document.createElement("table");
+      const paise = document.createElement("tr");
+
+      const nimi = document.createElement("th");
+      nimi.textContent = "Maletaja";
+      paise.appendChild(nimi);
+
+      if (paring === "maletajad") {
+        const tiitel = document.createElement("th");
+        tiitel.textContent = "Tiitel";
+        paise.appendChild(tiitel);
+      }
+
+      tabel.appendChild(paise);
+
+      for (const rida of tulemused) {
+        const tr = document.createElement("tr");
+
+        const nimiLahter = document.createElement("td");
+        const link = document.createElement("a");
+
+        link.href = rida.isik.value;
+        link.textContent = rida.isikLabel.value;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        nimiLahter.appendChild(link);
+        tr.appendChild(nimiLahter);
+
+        if (paring === "maletajad") {
+          const tiitelLahter = document.createElement("td");
+          tiitelLahter.textContent =
+            rida.tiitelLabel
+              ? rida.tiitelLabel.value
+              : "Tiitel märkimata";
+
+          tr.appendChild(tiitelLahter);
+        }
+
+        tabel.appendChild(tr);
+      }
+
+      vastus.appendChild(tabel);
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Maletajad Wikidatas</h1>
+
+  <p>
+    Sellel veebilehel saab uurida eri riikide maletajaid
+    ja nende tiitleid Wikidata andmebaasi põhjal.
+  </p>
+
+  <label for="riik">Vali riik:</label>
+
+  <select id="riik">
+    <option value="Q191">Eesti</option>
+    <option value="Q33">Soome</option>
+    <option value="Q34">Rootsi</option>
+  </select>
+
+  <br>
+
+  <label for="paring">Vali päring:</label>
+
+  <select id="paring">
+    <option value="maletajad">Maletajad ja nende tiitlid</option>
+    <option value="suurmeistrid">Suurmeistrid</option>
+  </select>
+
+  <br>
+
+  <button onclick="kysi()">Otsi</button>
+
+  <h2>Tulemused</h2>
+
+  <div id="vastus">
+    Vali riik ja päring ning vajuta nuppu „Otsi“.
+  </div>
+
+  <h2>Andmete tõlgendamine</h2>
+
+  <p>
+    Tulemused näitavad Wikidatas registreeritud maletajaid,
+    kelle kohta on olemas vastavad andmed. Tulemuste arv
+    ei pruugi näidata kõiki riigi maletajaid, sest andmebaas
+    võib olla puudulik.
+  </p>
+
+  <p>
+    <a href="https://www.wikidata.org/" target="_blank"
+       rel="noopener noreferrer">Wikidata</a>
+    |
+    <a href="https://query.wikidata.org/" target="_blank"
+       rel="noopener noreferrer">Wikidata Query Service</a>
+  </p>
+</body>
+</html>
