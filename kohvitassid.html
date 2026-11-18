@@ -73,6 +73,18 @@
                 kohvitass(x, y, d[1], d[2], d[3], d[0]);
             }
         }
+        // Loeb Google Sheetsist kõige uuemad andmed
+ function uuendaAndmed() {
+    fetch("SINU_APPS_SCRIPTI_URL")
+        .then(response => response.json())
+        .then(andmed => loe(andmed));
+}
+
+// Võtab andmed vastu ja joonistab kohvitassid uuesti
+function loe(andmed) {
+    ilmaandmed = andmed.slice(1);
+    joonista();
+}
     </script>
 </head>
 
