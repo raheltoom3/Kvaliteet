@@ -8,14 +8,19 @@
         let g;
 
         // Ilmaandmed
-        let ilmaandmed = [];
+        let ilmaandmed = [
+            ["01.12", -5, 4, 8],
+            ["02.12", -2, 7, 12],
+            ["03.12", 1, 3, 5],
+            ["04.12", -8, 9, 15]
+        ];
 
         // Funktsioon kohvitassi joonistamiseks
         // x, y - kohvitassi asukoht
-        // temp - temperatuur
-        // tuul - tuule kiirus
-        // puhang - tuulepuhang
-        // kuupaev - kuupäev
+        // temp - temperatuur (mõjutab tassi suurust)
+        // tuul - tuule kiirus (mõjutab auru kaldenurka)
+        // puhang - tuulepuhang (mõjutab auru hulka)
+        // kuupaev - kuupäev, mis kirjutatakse tassi alla
 
         function kohvitass(x, y, temp, tuul, puhang, kuupaev) {
 
@@ -53,13 +58,12 @@
             g.fillText(kuupaev, x, y + 20);
         }
 
-        // Joonistab kõik kohvitassid
         function joonista() {
-            let tahvel = document.getElementById("tahvel");
             g = tahvel.getContext("2d");
 
             g.clearRect(0, 0, 900, 340);
 
+            // Joonistame iga päeva ilmaandmete põhjal kohvitassi
             for (let i = 0; i < ilmaandmed.length; i++) {
                 let d = ilmaandmed[i];
 
@@ -69,21 +73,6 @@
                 kohvitass(x, y, d[1], d[2], d[3], d[0]);
             }
         }
-
-        // Loeb Google Sheetsist kõige uuemad andmed
-        function uuendaAndmed() {
-            fetch("SINU_APPS_SCRIPTI_URL")
-                .then(response => response.json())
-                .then(andmed => loe(andmed))
-                .catch(error => alert("Andmete laadimine ebaõnnestus: " + error));
-        }
-
-        // Võtab andmed vastu ja joonistab uuesti
-        function loe(andmed) {
-            ilmaandmed = andmed.slice(1);
-            joonista();
-        }
-
     </script>
 </head>
 
@@ -97,13 +86,8 @@
         Auru hulk = tuulepuhang
     </p>
 
-    <button onclick="uuendaAndmed()">Uuenda andmeid</button>
-
-    <br><br>
-
     <canvas id="tahvel" width="900" height="340">
     </canvas>
 
 </body>
 </html>
-
